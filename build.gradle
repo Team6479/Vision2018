@@ -1,6 +1,6 @@
 // Do not mess with the following 6 lines
 plugins {
-  id 'com.github.johnrengelman.shadow' version '1.2.4'
+  id 'com.github.johnrengelman.shadow' version '2.0.2'
 }
 
 apply plugin: 'java'
@@ -16,7 +16,7 @@ apply plugin: 'application'
 //ext.buildType = "arm-raspbian"
 
 // Uncomment the line below to build for an armhf device such as a Jetson or a Beaglebone Black
-//ext.buildType = "armhf"
+ext.buildType = "armhf"
 
 // Change the line below if you change the name of your main Java class
 mainClassName = 'Main'
@@ -36,7 +36,7 @@ repositories {
 dependencies {
   compile ntcoreDep()
   compile cscoreDep()
-  compile 'org.opencv:opencv-java:3.1.0'
+  compile 'org.opencv:opencv-java:3.2.0'
 }
 
 jar {

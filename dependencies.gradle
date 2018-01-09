@@ -1,23 +1,9 @@
 ext.ntcoreDep = { ->
-    def classifier
-    if (buildType == "windows") {
-      classifier = "windows2015"
-    } else if (buildType == "linux") {
-      classifier = "desktop"
-    } else {
-      classifier = buildType
-    }
-    return "edu.wpi.first.wpilib.networktables.java:NetworkTables:+:$classifier"
+    return "edu.wpi.first.ntcore:ntcore-java:4.0.0"
 }
 
 ext.cscoreDep = { ->
-    def classifier
-    if (buildType == "windows") {
-      classifier = "windows2015"
-    } else {
-      classifier = buildType
-    }
-    return "edu.wpi.cscore.java:cscore:+:$classifier"
+    return "edu.wpi.first.cscore:cscore-java:1.1.0"
 }
 
 ext.getOpenCvPlatformPackage = { ->
@@ -52,7 +38,7 @@ task downloadOpenCv() {
 
     doFirst {
         def classifier = getOpenCvPlatformPackage()
-        def armOpenCvDependency = project.dependencies.create("org.opencv:opencv-jni:3.1.0:$classifier@jar")
+        def armOpenCvDependency = project.dependencies.create("org.opencv:opencv-jni:3.2.0:$classifier@jar")
         def armOpenCvConfig = project.configurations.detachedConfiguration(armOpenCvDependency)
         armOpenCvConfig.setTransitive(false)
         armOpenCv = armOpenCvConfig.files[0].canonicalFile
