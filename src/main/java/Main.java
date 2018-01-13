@@ -1,43 +1,32 @@
-import java.util.ArrayList;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.networktables.*;
-import edu.wpi.first.wpilibj.tables.*;
-import edu.wpi.cscore.*;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-//import edu.wpi.first.networktables.*;
+import edu.wpi.first.networktables.*;
 
 public class Main {
   public static void main(String[] args) {
     // Loads our OpenCV library. This MUST be included
     System.loadLibrary("opencv_java320");
-
-    // Connect NetworkTables, and get access to the publishing table
-    //NetworkTable.setClientMode();
-    // Set your team number here
-    //NetworkTable.setTeam(9999);
-
-    //NetworkTable.initialize();
     
-    //NetworkTableInstance table = NetworkTableInstance.getDefault().getTable("GRIP").getKeys()
-
+    
+    //get the table which holds all values for the camera
+    NetworkTableInstance table = NetworkTableInstance.create();
+    table.startClient("JetsonTable", 1182);
+    System.out.println("Did we connect? " + table.isConnected());
+    System.out.println(table.getConnections());
+    
+    
     // This is the network port you want to stream the raw received image to
     // By rules, this has to be between 1180 and 1190, so 1185 is a good choice
-    int streamPort = 1185;
+    /*int streamPort = 1185;
 
     // This stores our reference to our mjpeg server for streaming the input image
     MjpegServer inputStream = new MjpegServer("MJPEG Server", streamPort);
     
       
 
-    /***********************************************/
-
     // USB Camera
-    /*
     // This gets the image from a USB camera 
     // Usually this will be on device 0, but there are other overloads
-    // that can be used*/
+    // that can be used
     UsbCamera camera = setUsbCamera(0, inputStream);
     // Set the resolution for our camera, since this is over USB
     camera.setResolution(640,480);
@@ -74,10 +63,10 @@ public class Main {
       // This will most likely be a marked up image of what the camera sees
       // For now, we are just going to stream the HSV image
       imageSource.putFrame(hsv);
-    }
+    }*/
   }
 
-  private static HttpCamera setHttpCamera(String cameraName, MjpegServer server) {
+  /*private static HttpCamera setHttpCamera(String cameraName, MjpegServer server) {
     // Start by grabbing the camera from NetworkTables
     NetworkTable publishingTable = NetworkTable.getTable("CameraPublisher");
     // Wait for robot to connect. Allow this to be attempted indefinitely
@@ -121,5 +110,5 @@ public class Main {
     UsbCamera camera = new UsbCamera("CoprocessorCamera", cameraId);
     server.setSource(camera);
     return camera;
-  }
+  }*/
 }
