@@ -1,31 +1,10 @@
-ext.ntcoreDep = { ->
-    return "edu.wpi.first.ntcore:ntcore-java:4.0.0"
-}
-
 ext.cscoreDep = { ->
-    return "edu.wpi.first.cscore:cscore-java:1.1.0"
+    return "edu.wpi.cscore.java:cscore:+:$buildType"
 }
 
 ext.getOpenCvPlatformPackage = { ->
-  if (buildType == "windows") {
-    if (System.getProperty("os.arch") == "amd64") {
-      return "windows-x86_64_2015"
-    } else {
-      return "windows-x86_2015"
-    }
-  } else if (buildType == "linux") {
-    if (System.getProperty("os.arch") == "amd64") {
-      return "linux-x86_64"
-    } else {
-      return "linux-x86"
-    }
-  } else if (buildType == "armhf") {
-    return "linux-armhf"
-  } else if (buildType == "arm-raspbian") {
-    return "linux-arm-raspbian"
-  } else {
-    return buildType
-  }
+    return "linux-arm"
+    //return "linux-x86"
 }
 
 task downloadOpenCv() {
@@ -38,7 +17,7 @@ task downloadOpenCv() {
 
     doFirst {
         def classifier = getOpenCvPlatformPackage()
-        def armOpenCvDependency = project.dependencies.create("org.opencv:opencv-java:3.2.0")
+        def armOpenCvDependency = project.dependencies.create("org.opencv:opencv-jni:3.1.0:$classifier@jar")
         def armOpenCvConfig = project.configurations.detachedConfiguration(armOpenCvDependency)
         armOpenCvConfig.setTransitive(false)
         armOpenCv = armOpenCvConfig.files[0].canonicalFile

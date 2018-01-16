@@ -1,19 +1,17 @@
 // Do not mess with the following 6 lines
 plugins {
   id 'com.github.johnrengelman.shadow' version '2.0.2'
+  id "eclipse"
+  id 'org.hidetake.ssh' version '2.9.0'
 }
 
 apply plugin: 'java'
 apply plugin: 'application'
 
-
-// This is where you select which operating system to build for.
-
-// Uncomment the line below to build for windows
-//ext.buildType = "windows"
-
-// Uncomment the line below to build for a Raspberry Pi running raspbian
-//ext.buildType = "arm-raspbian"
+//install the wrapper
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.4.1'
+}
 
 // Uncomment the line below to build for an armhf device such as a Jetson or a Beaglebone Black
 ext.buildType = "armhf"
@@ -21,9 +19,8 @@ ext.buildType = "armhf"
 // Change the line below if you change the name of your main Java class
 mainClassName = 'Main'
 // Change the line below to change the name of the output jar
-def projectName = 'CameraVision'
+def projectName = 'Vision2018'
 
-// Shouldn't need to change anything below this point
 apply from: 'dependencies.gradle'
 
 repositories {
@@ -34,9 +31,8 @@ repositories {
 }
 
 dependencies {
-  compile ntcoreDep()
   compile cscoreDep()
-  compile 'org.opencv:opencv-java:3.2.0'
+  compile 'org.opencv:opencv-java:3.1.0'
 }
 
 jar {
@@ -65,13 +61,8 @@ def outputDirectory = file("${rootDir}/output")
 task writeExecuteScript() {
   dependsOn jar
   doLast {
-    if (buildType == "windows") {
-      def runFile = new File("${buildDir}/run${projectName}.bat")
+      def runFile = new File("${buildDir}/run${projectName}.sh")
       runFile.write "java -Djava.library.path=. -jar ${projectName}-all.jar"
-    } else {
-      def runFile = new File("${buildDir}/run${projectName}")
-      runFile.write "java -Djava.library.path=. -jar ${projectName}-all.jar"
-    }
   }
 }
 
@@ -86,13 +77,8 @@ task copyToOutput(type: Copy) {
     exclude 'META-INF'
     exclude '**/MANIFEST.MF'
   }
-  if (buildType == "windows") {
-    from (file("${buildDir}/run${projectName}.bat")) {
+    from (file("${buildDir}/run${projectName}.sh")) {
     }
-  } else {
-    from (file("${buildDir}/run${projectName}")) {
-    }
-  }
 }
 
 task zipOutput(type: Zip) {
@@ -107,14 +93,9 @@ task zipOutput(type: Zip) {
     exclude 'META-INF'
     exclude '**/MANIFEST.MF'
   }
-  if (buildType == "windows") {
-    from (file("${buildDir}/run${projectName}.bat")) {
-    }
-  } else {
-    from (file("${buildDir}/run${projectName}")) {
+    from (file("${buildDir}/run${projectName}.sh")) {
       fileMode 0777
     }
-  }
 }
 
 distZip.dependsOn unzipOpenCv
@@ -125,6 +106,27 @@ applicationDefaultJvmArgs = ["-Djava.library.path=${openCvUnzipLocation}"]
 build.dependsOn copyToOutput
 build.dependsOn zipOutput
 run.dependsOn unzipOpenCv
+
+
+remotes {
+  jetson {
+    //host = '10.64.79.74'
+    host = '192.168.1.2'
+    user = 'nvidia'
+    password = 'nvidia'
+  }
+}
+
+task deploy {
+	dependsOn copyToOutput
+  doLast {
+    ssh.run {
+      session(remotes.jetson) {
+      	put from: "${outputDirectory}", into: '.'
+      }
+    }
+  }
+}
 
 clean {
     delete outputDirectory
