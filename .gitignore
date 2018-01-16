@@ -1,5 +1,18 @@
-/bin/
-/.gradle/
-/output/
-/build/
+# Build Paths
+bin/
+out/
+output/
+build/
 
+# Gradle Files
+.gradle/
+
+# IDE Files
+# Eclipse
+.classpath
+.project
+.settings/
+#IntelliJ
+*.iml
+.idea/
+=======
