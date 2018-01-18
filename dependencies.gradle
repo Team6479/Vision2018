@@ -5,6 +5,8 @@ ext.cscoreDep = { ->
 ext.getOpenCvPlatformPackage = { ->
     return "linux-arm"
     //return "linux-x86"
+    //return "aarch64"
+    //return "armhf"
 }
 
 task downloadOpenCv() {

@@ -14,7 +14,7 @@ task wrapper(type: Wrapper) {
 }
 
 // Uncomment the line below to build for an armhf device such as a Jetson or a Beaglebone Black
-ext.buildType = "armhf"
+ext.buildType = "aarch64"
 
 // Change the line below if you change the name of your main Java class
 mainClassName = 'Main'
@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-  compile cscoreDep()
+  //compile cscoreDep()
   compile 'org.opencv:opencv-java:3.1.0'
 }
 
@@ -62,7 +62,7 @@ task writeExecuteScript() {
   dependsOn jar
   doLast {
       def runFile = new File("${buildDir}/run${projectName}.sh")
-      runFile.write "java -Djava.library.path=. -jar ${projectName}-all.jar"
+      runFile.write "java -Djava.library.path=/usr/lib -jar ${projectName}-all.jar"
   }
 }
 
