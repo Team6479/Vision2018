@@ -1,37 +1,32 @@
 
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.opencv.videoio.VideoCapture;
+import org.opencv.imgcodecs.Imgcodecs;
 
 //import edu.wpi.cscore.UsbCamera;
 
 public class Main {
+	
+	//load libararues
+	static { 
+		System.out.println("Loading Libraries from " + System.getProperty("java.library.path"));
+		System.loadLibrary("opencv_java340");
+	}
+	
 	public static void main(String[] args) {
-		// Loads our OpenCV library. This MUST be included
-		System.out.println("PATH: " + System.getProperty("java.library.path"));
-		try {
-		//System.loadLibrary("libopencv_core");
+		//open camera
+		VideoCapture camera = new VideoCapture(0);
+		if(camera.isOpened()) {
+			System.out.println("Opened Camera succsefully");
 		}
-		catch (UnsatisfiedLinkError e) {
-			e.printStackTrace();
+		Mat capture = new Mat();
+		boolean success = camera.read(capture);
+		if(success) {
+			System.out.println("Got an image succesfully");
 		}
-		System.load("/mnt/flashdrive/opencv/build/lib/libopencv_java340.so");
-		try {
-		//System.load("/usr/lib/libopencv_core.so");
+		success = Imgcodecs.imwrite("test.jpg", capture);
+		if(success) {
+			System.out.println("Wrote an image succesfully");
 		}
-		catch (UnsatisfiedLinkError e) {
-			e.printStackTrace();
-		}
-
-	    System.out.println("Welcome to OpenCV " + Core.VERSION);
-	    Mat m = new Mat(5, 10, CvType.CV_8UC1, new Scalar(0));
-	    System.out.println("OpenCV Mat: " + m);
-	    Mat mr1 = m.row(1);
-	    mr1.setTo(new Scalar(1));
-	    Mat mc5 = m.col(5);
-	    mc5.setTo(new Scalar(5));
-	    System.out.println("OpenCV Mat data:\n" + m.dump());
 	}
 }
