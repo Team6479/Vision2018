@@ -32,7 +32,8 @@ repositories {
 
 dependencies {
   //compile cscoreDep()
-  compile 'org.opencv:opencv-java:3.1.0'
+  //compile 'org.opencv:opencv-java:3.1.0'
+  compile files('lib/opencv-340.jar')
 }
 
 jar {
