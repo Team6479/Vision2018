@@ -14,5 +14,6 @@ build/
 .settings/
 #IntelliJ
 *.iml
+*.ipr
+*.iws
 .idea/
-=======
