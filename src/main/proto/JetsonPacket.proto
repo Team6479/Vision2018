@@ -1,7 +1,22 @@
 syntax = "proto3";
 
+option java_package = "communication";
 option java_outer_classname = "JetsonPacket";
 
-message Packet {
-    string test = 1;
+
+//what kind of filtering the jetson should be doing, ie cube, goal
+//this is what the rio sends
+message ModePacket {
+    enum Mode {
+    		CUBE = 0;
+    		GOAL = 1;
+    	}
+    	Mode mode = 1;
+}
+
+//the number of pixels that the center of the current object tracking is from the center of the camera
+//only deals with horizontal plane
+//this is what the jetson sends
+message CameraPacket {
+    double distance = 1;
 }

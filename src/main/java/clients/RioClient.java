@@ -1,37 +1,40 @@
 package clients;
-import java.io.BufferedReader;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
+
+import communication.JetsonPacket.*;
 
 //class to access server on rio
 public class RioClient {
 
 	private Thread clientThread;
-	private String dataOutput;
-	private String dataRecieved;
+	private CameraPacket dataOutput;
+	private ModePacket dataRecieved;
 
 	public RioClient(String host, int port) {
 		
-		dataOutput = "Open connection";
-		dataRecieved = "No data yet recieved";
+		//init the dataoutput
+		dataOutput = CameraPacket.newBuilder().setDistance(0).build();
 		
 		//run in a thread
 		clientThread = new Thread(() -> {
 		
 			// init all resources that must be closed here
 			try (Socket socket = new Socket(host, port);
-				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+				OutputStream out = socket.getOutputStream();
+				InputStream in = socket.getInputStream()) {
 
 				// print diagnoastic info about connection
 				System.out.println("Connected to server on rio");
 				
 				// loop until thread is stopped
 				while (!clientThread.isInterrupted()) {
-					dataRecieved = in.readLine();
-					out.println(dataOutput);
+					dataRecieved = ModePacket.parseFrom(in);
+					
+					out.write(dataOutput.toByteArray());
 				}
 			}
 			catch (IOException e) {
@@ -51,11 +54,13 @@ public class RioClient {
 	public boolean isAlive() {
 		return !clientThread.isInterrupted();
 	}
-	public synchronized String readData() {
-		return dataRecieved;
+	//gets the filtering mode the robot should be doing
+	public synchronized ModePacket.Mode getMode() {
+		return dataRecieved.getMode();
 	}
-	public synchronized void sendData(String data) {
-		dataOutput = data;
+	//send the ditance in pixels to center of camera of the object
+	public synchronized void sendDistance(Double distance) {
+		dataOutput = CameraPacket.newBuilder().setDistance(distance).build();
 	}
 
 }

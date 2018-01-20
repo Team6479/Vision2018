@@ -32,7 +32,7 @@ public class Main {
 		//open camera
 		VideoCapture camera = new VideoCapture(0);
 		if(camera.isOpened()) {
-			rioClient.sendData("Camera started successfully");
+			
 		}
 		//make a mat that will be reused
 		Mat capture = new Mat();
@@ -41,7 +41,7 @@ public class Main {
 			
 			boolean success = camera.read(capture);
 			if(success) {
-				rioClient.sendData("Got an image succesfully");
+				rioClient.sendDistance(5.0);
 			}
 			//success = Imgcodecs.imwrite("test.jpg", capture);
 			/*if(success) {
