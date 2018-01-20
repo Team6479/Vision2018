@@ -1,9 +1,6 @@
 package clients;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
 //class to access server on driver station
@@ -18,8 +15,8 @@ public class DSClient {
 		
 			// init all resources that must be closed here
 			try (Socket socket = new Socket(host, port);
-				OutputStream out = socket.getOutputStream();
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+				 OutputStream out = socket.getOutputStream();
+				 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
 				// print diagnoastic info about connection
 				System.out.println("Connected to server on driver station");
