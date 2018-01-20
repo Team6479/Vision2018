@@ -91,8 +91,7 @@ build {
 
 remotes {
   jetson {
-    //host = '10.64.79.74'
-    host = '192.168.1.2'
+    host = '10.64.79.74'
     user = 'nvidia'
     password = 'nvidia'
   }
@@ -103,11 +102,20 @@ task deploy {
   doLast {
     ssh.run {
       session(remotes.jetson) {
-      	put from: "${outputDirectory}", into: '.'
+      //copy over
+      	put from: "${outputDirectory}/${projectName}.zip", into: 'VisionCode2018/'
+      	
+      	def zipLoc = "VisionCode2018/${projectName}.zip"
+      	
+      	def execCMD = "unzip ${zipLoc} -d VisionCode2018/"
+      	
+      	//unzip
+      	def result = execute execCMD
       }
     }
   }
 }
+
 
 clean {
     delete outputDirectory
