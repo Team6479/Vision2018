@@ -4,6 +4,8 @@ out/
 output/
 build/
 
+#FOR JACOB
+
 # Gradle Files
 .gradle/
 
