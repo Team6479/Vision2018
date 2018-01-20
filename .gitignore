@@ -4,6 +4,9 @@ out/
 output/
 build/
 
+# System files
+.DS_Store
+
 # Gradle Files
 .gradle/
 
