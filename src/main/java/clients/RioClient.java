@@ -17,7 +17,7 @@ public class RioClient {
 	public RioClient(String host, int port) {
 		
 		//init the dataoutput
-		dataOutput = CameraPacket.newBuilder().setDistance(0).build();
+		sendDistance(0.5);
 		
 		//run in a thread
 		clientThread = new Thread(() -> {
@@ -32,9 +32,9 @@ public class RioClient {
 				
 				// loop until thread is stopped
 				while (!clientThread.isInterrupted()) {
-					dataRecieved = ModePacket.parseFrom(in);
-					
 					out.write(dataOutput.toByteArray());
+					System.out.println(dataOutput.getDistance());
+					dataRecieved = ModePacket.parseFrom(in);
 				}
 			}
 			catch (IOException e) {

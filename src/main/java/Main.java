@@ -28,17 +28,15 @@ public class Main {
 		System.out.println("Starting Rio Client");
 		rioClient.startClient();
 		
-		
 		//open camera
 		VideoCapture camera = new VideoCapture(0);
 		if(camera.isOpened()) {
-			
+			System.out.println("Camera is opened");
 		}
 		//make a mat that will be reused
 		Mat capture = new Mat();
 		
 		while(rioClient.isAlive()) {
-			
 			boolean success = camera.read(capture);
 			if(success) {
 				rioClient.sendDistance(5.0);

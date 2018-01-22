@@ -102,7 +102,7 @@ remotes {
 }
 
 task deploy {
-	dependsOn copyToOutput
+	dependsOn build
   doLast {
     ssh.run {
       session(remotes.jetson) {
@@ -124,3 +124,21 @@ task deploy {
 clean {
     delete outputDirectory
 }
+
+task remoteClean {
+        doLast {
+    ssh.run {
+      session(remotes.jetson) {
+      	
+      	def contents = "VisionCode2018/*"
+      	
+      	def execCMD = "rm ${contents}"
+      	
+      	//unzip
+      	def result = execute execCMD
+      }
+    }
+  } 
+         
+ }
+
