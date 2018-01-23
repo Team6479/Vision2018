@@ -5,16 +5,16 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
 import org.opencv.videoio.VideoCapture;
-import org.opencv.videoio.VideoWriter;
 
 import clients.RioClient;
 import communication.JetsonPacket.ModePacket.Mode;
+import pipelines.CubeFilterContours;
 import pipelines.CubeVisionPipe;
 
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.video.Video;
 
 //import edu.wpi.cscore.UsbCamera;
 
@@ -30,11 +30,7 @@ public class Main {
 	//the socket connection to the rio
 	public static RioClient rioClient;
 	
-	public static void main(String[] args) {
-		
-		//start the output socket
-		System.out.println("Starting Rio Client");
-		rioClient.startClient();
+	public static void main(String[] args) throws InterruptedException {
 		
 		//open camera
 		VideoCapture camera = new VideoCapture(0);
@@ -45,42 +41,51 @@ public class Main {
 		//make a mat that will be reused
 		Mat capture = new Mat();
 		
-		//make a capture so that can get the size of the camera view
-		camera.read(capture);
-		
-		Rect fullRect = Imgproc.boundingRect((MatOfPoint) capture);
-		//print the center rect
-		System.out.printf("Full x: %s y: %s width: %s height: %s\n", fullRect.x, fullRect.y, fullRect.width, fullRect.height);
-		Point center = new Point(fullRect.width / 2, fullRect.height / 2);
-		
 		//make pipeline, will be reused
 		CubeVisionPipe cube = new CubeVisionPipe();
 		
-		while(rioClient.isAlive()) {
+		while(true) {
+			Thread.sleep(1000);
 			boolean success = camera.read(capture);
 			if(success) {
-				System.out.println("Image succesfully taken");
-				
+				System.out.println("MODE: " + rioClient.getMode());
 				//run image through pipeline
 				if(rioClient.getMode() == Mode.CUBE) {
 					cube.process(capture);
 					//get the filtered countor output
 					List<MatOfPoint> contours = cube.filterContoursOutput();
+					//get the resized mat
+					Mat smallerCapture = cube.cvResizeOutput();
 					
 					System.out.println("There are " + contours.size() + " contours avaible");
 					
-					//get the first contour
-					MatOfPoint first = contours.get(0);
-					Rect objectRect = Imgproc.boundingRect(first);
-					Point objectCenter = new Point(objectRect.width / 2, objectRect.height / 2);
-					//print the center rect
-					System.out.printf("Object x: %s y: %s width: %s height: %s\n", objectRect.x, objectRect.y, objectRect.width, objectRect.height);
+					MatOfPoint cubeOutline = CubeFilterContours.filter(smallerCapture, contours);
+					
+					//skip to the end of the loop, nothing more to be done here
+					if(cubeOutline == null) {
+						continue;
+					}
+					
+					//get the center of the camera
+					Point center = new Point((smallerCapture.width() / 2), (smallerCapture.height() / 2));
+					
+					Rect objectRect = Imgproc.boundingRect(cubeOutline);
+					Point objectCenter = new Point(objectRect.x + (objectRect.width / 2), objectRect.y + (objectRect.height / 2));
+					
+					//find the difference between the center and the obejcts center
+					double centerX = center.x - objectCenter.x;
+					System.out.println(center.x);
+					System.out.println(objectCenter.x);
+					System.out.println(centerX + "\n\n");
+					
+					Imgproc.rectangle(smallerCapture, new Point(objectRect.x, objectRect.y), 
+							new Point(objectRect.x + objectRect.width, objectRect.height + objectRect.y), new Scalar(0, 0, 255), 1);
+					Imgproc.circle(smallerCapture, center, 2, new Scalar(0, 255, 0), 1);
+					Imgproc.circle(smallerCapture, objectCenter, 2, new Scalar(0, 255, 0), 1);
+					
+					Imgcodecs.imwrite("test.jpg", smallerCapture);
 				}
 			}
-			//success = Imgcodecs.imwrite("test.jpg", capture);
-			/*if(success) {
-				System.out.println("Wrote an image succesfully");
-			}*/
 		}
 	}
 }

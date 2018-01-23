@@ -8,8 +8,9 @@ option java_outer_classname = "JetsonPacket";
 //this is what the rio sends
 message ModePacket {
     enum Mode {
-    		CUBE = 0;
-    		GOAL = 1;
+    		NONE = 0;
+    		CUBE = 1;
+    		GOAL = 2;
     	}
     	Mode mode = 1;
 }
