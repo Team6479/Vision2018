@@ -1,7 +1,9 @@
 package clients;
 
 import java.io.IOException;
-import java.net.InetAddress;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -12,70 +14,50 @@ import communication.JetsonPacket.*;
 //class to access server on rio
 public class RioClient {
 
-	private SocketChannel socket;
+	private Socket socket;
+	private Thread thread;
 
 	public RioClient(String host, int port) {
-		try {
-			socket = SocketChannel.open(new InetSocketAddress(InetAddress.getByName(host), port));
-			//dont block
-			socket.configureBlocking(false);
-		}
-		catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		
+		dataRecieved = ModePacket.getDefaultInstance();
+		dataOutput = CameraPacket.getDefaultInstance();
+		
+		thread = new Thread(() -> {
+			try {
+				socket = new Socket(host, port);
+				
+				InputStream in = socket.getInputStream();
+				OutputStream out = socket.getOutputStream();
+				
+				System.out.println("Connected to server at " + socket.getInetAddress());
+				
+				while(!thread.isInterrupted()) {
+					
+					//write camera data
+					dataOutput.writeDelimitedTo(out);
+					
+					//read in from the current buffer
+					dataRecieved = ModePacket.parseDelimitedFrom(in);
+				}
+			}
+			catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		thread.setDaemon(true);
+		thread.start();
 	}
-	
-	
-	
-	//gets the filtering mode the robot should be doing
-	public ModePacket.Mode getMode() {
-		
-		//if socket is not connected, return
-		if(!socket.isConnected()) {
-			return ModePacket.Mode.UNRECOGNIZED;
-		}
-		
-		
-		try {
-			//read in from the current buffer
-			ByteBuffer input = ByteBuffer.allocate(1024);
-			socket.read(input);
-			input.flip();
-			ModePacket packet = ModePacket.parseFrom(input);
-			return packet.getMode();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		//could not read, unreconginzed
-		return ModePacket.Mode.UNRECOGNIZED;
-	}
-	//send the ditance in pixels to center of camera of the object
-	public boolean sendDistance(Double distance) {
-		
-		//if socket is not connected, return
-		if(!socket.isConnected()) {
-			return false;
-		}
-		
-		try {
-			//write distance to socket
-			CameraPacket data = CameraPacket.newBuilder().setDistance(distance).build();
-			ByteBuffer output = ByteBuffer.allocate(1024);
-			output.put(data.toByteArray());
-			output.flip();
-			socket.write(output);
-			//succesfully written
-			return true;
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return false;
+	public synchronized ModePacket.Mode getMode() {
+		return dataRecieved.getMode();
 	}
 
+	public synchronized void setDistance(Double distance) {
+		dataOutput = CameraPacket.newBuilder().setDistance(distance).build();
+	}
+
+	private ModePacket dataRecieved;
+	private CameraPacket dataOutput;
 }

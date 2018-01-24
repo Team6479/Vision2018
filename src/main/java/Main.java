@@ -45,7 +45,7 @@ public class Main {
 		CubeVisionPipe cube = new CubeVisionPipe();
 		
 		while(true) {
-			Thread.sleep(1000);
+			Thread.sleep(100);
 			boolean success = camera.read(capture);
 			if(success) {
 				System.out.println("MODE: " + rioClient.getMode());
@@ -73,17 +73,19 @@ public class Main {
 					Point objectCenter = new Point(objectRect.x + (objectRect.width / 2), objectRect.y + (objectRect.height / 2));
 					
 					//find the difference between the center and the obejcts center
-					double centerX = center.x - objectCenter.x;
-					System.out.println(center.x);
-					System.out.println(objectCenter.x);
-					System.out.println(centerX + "\n\n");
+					double diff = center.x - objectCenter.x;
+					System.out.println("Screen: "+center.x);
+					System.out.println("Object: "+objectCenter.x);
+					System.out.println("Diff: "+diff + "\n\n");
 					
 					Imgproc.rectangle(smallerCapture, new Point(objectRect.x, objectRect.y), 
 							new Point(objectRect.x + objectRect.width, objectRect.height + objectRect.y), new Scalar(0, 0, 255), 1);
 					Imgproc.circle(smallerCapture, center, 2, new Scalar(0, 255, 0), 1);
-					Imgproc.circle(smallerCapture, objectCenter, 2, new Scalar(0, 255, 0), 1);
+					Imgproc.circle(smallerCapture, objectCenter, 2, new Scalar(255, 0, 0), 1);
 					
 					Imgcodecs.imwrite("test.jpg", smallerCapture);
+					
+					rioClient.setDistance(diff);
 				}
 			}
 		}
