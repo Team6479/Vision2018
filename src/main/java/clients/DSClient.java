@@ -1,48 +1,70 @@
 package clients;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
-//class to access server on driver station
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfInt;
+import org.opencv.imgcodecs.Imgcodecs;
+
+//class to access server on rio
 public class DSClient {
 
-	private Thread clientThread;
+	private Socket socket;
+	private Thread thread;
 
 	public DSClient(String host, int port) {
 		
-		//run in a thread
-		clientThread = new Thread(() -> {
+		image = new Mat();
 		
-			// init all resources that must be closed here
-			try (Socket socket = new Socket(host, port);
-				 OutputStream out = socket.getOutputStream();
-				 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
-				// print diagnoastic info about connection
-				System.out.println("Connected to server on driver station");
+		thread = new Thread(() -> {
+			try {
+				socket = new Socket(host, port);
 				
-				// loop until thread is stopped
-				while (!clientThread.isInterrupted()) {
+				InputStream in = socket.getInputStream();
+				OutputStream out = socket.getOutputStream();
+				
+				System.out.println("Connected to server at " + socket.getInetAddress());
+				
+				while(!thread.isInterrupted()) {
 					
+					
+					MatOfByte buf = new MatOfByte();
+					MatOfInt quality = new MatOfInt(Imgcodecs.CV_IMWRITE_JPEG_QUALITY,60);
+					boolean res = Imgcodecs.imencode(".jpg", image, buf, quality);
+					out.write(buf.toArray());
+					out.flush();
+					
+					byte resp[] = new byte[8]; 
+					int rlen = in.read(resp);
+					if (!(rlen>0 && resp[0]==0x01)) {
+						//failure to repsond
+					}
+					
+					try {
+						Thread.sleep(100);
+					}
+					catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			}
+			catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
 			catch (IOException e) {
-				System.err.println("An error occured: " + e.getMessage());
-				System.exit(1);
+				e.printStackTrace();
 			}
 		});
-		clientThread.setDaemon(true);
+		thread.setDaemon(true);
+		thread.start();
 	}
-	
-	public void startClient() {
-		clientThread.start();
+	public synchronized void sendImage(Mat image) {
+		this.image = image;
 	}
-	public void stopClient() {
-		clientThread.interrupt();
-	}
-	public boolean isAlive() {
-		return !clientThread.isInterrupted();
-	}
-
+	private Mat image;
 }
-
