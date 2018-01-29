@@ -1,4 +1,5 @@
 
+import java.sql.Date;
 import java.util.List;
 
 import org.opencv.core.Mat;
@@ -8,6 +9,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.videoio.VideoCapture;
 
+import clients.DSClient;
 import clients.RioClient;
 import communication.JetsonPacket.ModePacket.Mode;
 import pipelines.CubeFilterContours;
@@ -16,8 +18,6 @@ import pipelines.CubeVisionPipe;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-//import edu.wpi.cscore.UsbCamera;
-
 public class Main {
 	
 	//load libararues
@@ -25,10 +25,13 @@ public class Main {
 		System.out.println("Loading Libraries from " + System.getProperty("java.library.path"));
 		System.loadLibrary("opencv_java340");
 		rioClient = new RioClient("roboRIO-6479-FRC.local", 1182);
+		dsClient = new DSClient("roboRIO-6479-FRC.local", 1183);
 	}
 	
 	//the socket connection to the rio
 	public static RioClient rioClient;
+	//socket connection to ds
+	public static DSClient dsClient;
 	
 	public static void main(String[] args) throws InterruptedException {
 		
@@ -44,10 +47,22 @@ public class Main {
 		//make pipeline, will be reused
 		CubeVisionPipe cube = new CubeVisionPipe();
 		
+		long currentTime = System.currentTimeMillis();
+		long lastTime = currentTime;
+		long timeInterval = 200;
+		
 		while(true) {
 			Thread.sleep(100);
 			boolean success = camera.read(capture);
+			
 			if(success) {
+				
+				currentTime = System.currentTimeMillis();
+				if((lastTime + timeInterval) >= currentTime) {
+					dsClient.sendImage(capture);
+					lastTime = currentTime;
+				}
+				
 				System.out.println("MODE: " + rioClient.getMode());
 				//run image through pipeline
 				if(rioClient.getMode() == Mode.CUBE) {

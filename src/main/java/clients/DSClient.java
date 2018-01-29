@@ -19,7 +19,7 @@ public class DSClient {
 
 	public DSClient(String host, int port) {
 		
-		image = new Mat();
+		image = null;
 		
 		thread = new Thread(() -> {
 			try {
@@ -32,24 +32,28 @@ public class DSClient {
 				
 				while(!thread.isInterrupted()) {
 					
-					
-					MatOfByte buf = new MatOfByte();
-					MatOfInt quality = new MatOfInt(Imgcodecs.CV_IMWRITE_JPEG_QUALITY,60);
-					boolean res = Imgcodecs.imencode(".jpg", image, buf, quality);
-					out.write(buf.toArray());
-					out.flush();
-					
-					byte resp[] = new byte[8]; 
-					int rlen = in.read(resp);
-					if (!(rlen>0 && resp[0]==0x01)) {
-						//failure to repsond
+					if(image != null) {
+						MatOfByte buf = new MatOfByte();
+						MatOfInt quality = new MatOfInt(Imgcodecs.CV_IMWRITE_JPEG_QUALITY,60);
+						boolean res = Imgcodecs.imencode(".jpg", image, buf, quality);
+						out.write(buf.toArray());
+						out.flush();
+						
+						byte resp[] = new byte[8]; 
+						int rlen = in.read(resp);
+						if (!(rlen>0 && resp[0]==0x01)) {
+							//failure to repsond
+						}
+						
+						image = null;
 					}
-					
-					try {
-						Thread.sleep(100);
-					}
-					catch (InterruptedException e) {
-						e.printStackTrace();
+					else {
+						try {
+							Thread.sleep(10);
+						}
+						catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}
