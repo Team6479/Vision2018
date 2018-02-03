@@ -1,5 +1,11 @@
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.opencv.core.Mat;
@@ -20,12 +26,55 @@ import org.opencv.imgproc.Imgproc;
 
 public class Main {
 	
+    public static final String macAddrDS = "90:2e:1c:e1:96:aa";
+    
 	//load libararues
 	static { 
-		System.out.println("Loading Libraries from " + System.getProperty("java.library.path"));
+		//System.out.println("Loading Libraries from " + System.getProperty("java.library.path"));
 		System.loadLibrary("opencv_java340");
+		
+		//System.out.println("Connecting to RIO");
 		rioClient = new RioClient("roboRIO-6479-FRC.local", 1182);
-		dsClient = new DSClient("roboRIO-6479-FRC.local", 1183);
+		
+		
+		try {
+            System.out.println("Finding Driver Station IP");
+            //run command 
+            Process p = Runtime.getRuntime().exec("sh ipFinder.sh");
+            p.waitFor();
+            p.destroy();
+            //read the file
+            File ipAddrFile = new File("ipaddr");
+            FileReader reader = new FileReader(ipAddrFile);
+            String fileContents = "";
+            int next;
+            //-1 is end of stream
+            while((next = reader.read()) != -1) {
+                char c = (char)next;
+                //if whitespace or newlines, dont put in
+                if(c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+                    continue;
+                }
+                fileContents += c;
+            }
+            reader.close();
+            //if the file contents is no ip, dont connect the ds
+            if(!fileContents.contains("NO_IP_FOUND")) {
+                //System.out.println("Connecting to DS");
+                //get dsclients ip
+                dsClient = new DSClient(fileContents, 1183);
+            }
+            else {
+                System.out.println("Could not connect to DS: could not find");
+                dsClient = null;
+            }
+		}
+		catch (IOException e) {
+		    System.out.println("Error reading file: " + e.getMessage());
+		}
+        catch (InterruptedException e) {
+            System.out.println("Error running process: " + e.getMessage());
+        }
 	}
 	
 	//the socket connection to the rio
@@ -59,7 +108,10 @@ public class Main {
 				
 				currentTime = System.currentTimeMillis();
 				if((lastTime + timeInterval) >= currentTime) {
-					dsClient.sendImage(capture);
+				    if(dsClient != null)
+				    {
+				        dsClient.sendImage(capture);
+				    }
 					lastTime = currentTime;
 				}
 				

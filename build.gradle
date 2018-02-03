@@ -70,6 +70,8 @@ task copyToOutput(type: Copy) {
   }
   from (file("lib/libopencv_java340.so")) {
   }
+  from (file("scripts/ipFinder.sh")) {
+  }
 
 }
 
@@ -84,6 +86,8 @@ task zipOutput(type: Zip) {
       fileMode 0777
   }
   from (file("lib/libopencv_java340.so")) {
+  }
+    from (file("scripts/ipFinder.sh")) {
   }
 }
 
