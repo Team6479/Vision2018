@@ -31,10 +31,10 @@ public class DSClient {
 				System.out.println("Connected to server at " + socket.getInetAddress());
 				
 				while(!thread.isInterrupted()) {
-					
 					if(image != null) {
 						MatOfByte buf = new MatOfByte();
-						MatOfInt quality = new MatOfInt(Imgcodecs.CV_IMWRITE_JPEG_QUALITY,60);
+						MatOfInt quality = new MatOfInt(Imgcodecs.CV_IMWRITE_JPEG_QUALITY,50);
+						//MatOfInt quality = new MatOfInt(Imgcodecs.CV_IMWRITE_PNG_COMPRESSION,50);
 						boolean res = Imgcodecs.imencode(".jpg", image, buf, quality);
 						out.write(buf.toArray());
 						out.flush();

@@ -96,24 +96,27 @@ public class Main {
 		//make pipeline, will be reused
 		CubeVisionPipe cube = new CubeVisionPipe();
 		
-		long currentTime = System.currentTimeMillis();
+		/*long currentTime = System.currentTimeMillis();
 		long lastTime = currentTime;
-		long timeInterval = 200;
+		long timeInterval = 200;*/
+		
+		long framesPerSecond = 30;
+		long refreshRate = 1000 / framesPerSecond;
 		
 		while(true) {
-			Thread.sleep(100);
+			Thread.sleep(refreshRate);
 			boolean success = camera.read(capture);
 			
 			if(success) {
 				
-				currentTime = System.currentTimeMillis();
-				if((lastTime + timeInterval) >= currentTime) {
+				//currentTime = System.currentTimeMillis();
+				//if((lastTime + timeInterval) >= currentTime) {
 				    if(dsClient != null)
 				    {
 				        dsClient.sendImage(capture);
 				    }
-					lastTime = currentTime;
-				}
+					//lastTime = currentTime;
+				//}
 				
 				System.out.println("MODE: " + rioClient.getMode());
 				//run image through pipeline
