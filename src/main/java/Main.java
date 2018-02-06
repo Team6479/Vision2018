@@ -108,19 +108,15 @@ public class Main {
 			boolean success = camera.read(capture);
 			
 			if(success) {
+				if(dsClient != null)
+				{
+					dsClient.sendImage(capture);
+				}
 				
-				//currentTime = System.currentTimeMillis();
-				//if((lastTime + timeInterval) >= currentTime) {
-				    if(dsClient != null)
-				    {
-				        dsClient.sendImage(capture);
-				    }
-					//lastTime = currentTime;
-				//}
-				
-				System.out.println("MODE: " + rioClient.getMode());
+				Mode cameraMode = rioClient.getMode();
+				System.out.println("MODE: " + cameraMode);
 				//run image through pipeline
-				if(rioClient.getMode() == Mode.CUBE) {
+				if(cameraMode == Mode.CUBE) {
 					cube.process(capture);
 					//get the filtered countor output
 					List<MatOfPoint> contours = cube.filterContoursOutput();
@@ -156,6 +152,9 @@ public class Main {
 					Imgcodecs.imwrite("test.jpg", smallerCapture);
 					
 					rioClient.setDistance(diff);
+				}
+				else if(cameraMode == Mode.GOAL) {
+					
 				}
 			}
 		}
