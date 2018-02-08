@@ -1,11 +1,7 @@
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.opencv.core.Mat;
@@ -18,8 +14,10 @@ import org.opencv.videoio.VideoCapture;
 import clients.DSClient;
 import clients.RioClient;
 import communication.JetsonPacket.ModePacket.Mode;
-import pipelines.CubeFilterContours;
+import filter.CubeFilterContours;
+import filter.GoalFilterContours;
 import pipelines.CubeVisionPipe;
+import pipelines.GoalVisionPipe;
 
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -95,10 +93,7 @@ public class Main {
 		
 		//make pipeline, will be reused
 		CubeVisionPipe cube = new CubeVisionPipe();
-		
-		/*long currentTime = System.currentTimeMillis();
-		long lastTime = currentTime;
-		long timeInterval = 200;*/
+		GoalVisionPipe goal = new GoalVisionPipe();
 		
 		long framesPerSecond = 30;
 		long refreshRate = 1000 / framesPerSecond;
@@ -154,7 +149,54 @@ public class Main {
 					rioClient.setDistance(diff);
 				}
 				else if(cameraMode == Mode.GOAL) {
+					goal.process(capture);
+					//get the filtered countor output
+					List<MatOfPoint> contours = goal.filterContoursOutput();
+					//get the resized mat
+					Mat smallerCapture = goal.cvResizeOutput();
 					
+					System.out.println("There are " + contours.size() + " contours avaible");
+					
+					//filter
+					GoalFilterContours.MatVector goalOutline = GoalFilterContours.filter(smallerCapture, contours);
+					
+					//skip to the end of the loop, nothing more to be done here
+					if(goalOutline == null) {
+						continue;
+					}
+					
+					//get the center of the camera
+					Point center = new Point((smallerCapture.width() / 2), (smallerCapture.height() / 2));
+					
+					Rect object1Rect = Imgproc.boundingRect(goalOutline.left);
+					Rect object2Rect = Imgproc.boundingRect(goalOutline.right);
+					
+					//find the point between the two with regards to the x coordinate
+					//the y coordinate does not matter
+					double goalCenterX;
+					//calculation accurarcy relies on using left most object
+					//this if will do that
+					if (object1Rect.x < object1Rect.y) {
+						//object one is left
+						goalCenterX = object2Rect.x - (object1Rect.x + object1Rect.width);
+					}
+					else {
+						//object one is right
+						goalCenterX = object1Rect.x - (object2Rect.x + object2Rect.width);
+					}
+					
+					//find the difference between the center and the obejcts center
+					double diff = center.x - goalCenterX;
+					System.out.println("Screen: "+center.x);
+					System.out.println("Object: "+goalCenterX);
+					System.out.println("Diff: "+diff + "\n\n");
+					
+					Imgproc.circle(smallerCapture, center, 2, new Scalar(0, 255, 0), 1);
+					Imgproc.line(smallerCapture, new Point(goalCenterX, 0), new Point(goalCenterX, smallerCapture.height()), new Scalar(0, 0, 255), 1);
+					
+					Imgcodecs.imwrite("test.jpg", smallerCapture);
+					
+					rioClient.setDistance(diff);
 				}
 			}
 		}

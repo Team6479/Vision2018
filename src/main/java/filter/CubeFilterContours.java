@@ -1,4 +1,4 @@
-package pipelines;
+package filter;
 
 import java.util.List;
 
@@ -9,13 +9,17 @@ import org.opencv.imgproc.Imgproc;
 
 public class CubeFilterContours {
 	
-	
 	//filter out the most likely conotur
 	public static MatOfPoint filter(Mat src, List<MatOfPoint> contours) {
 		
 		//if no contours, return null
 		if(contours.size() == 0) {
 			return null;
+		}
+		
+		//if there is only one contour, no filtering need, return
+		if(contours.size() == 1) {
+			return contours.get(0);
 		}
 		
 		//get the area of the whole mat as a refrence
