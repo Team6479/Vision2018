@@ -52,25 +52,18 @@ distributions {
 
 def outputDirectory = file("${rootDir}/output")
 
-task writeExecuteScript() {
-  dependsOn jar
-  doLast {
-      def runFile = new File("${buildDir}/run${projectName}.sh")
-      runFile.write "java -Djava.library.path=`pwd`/ -jar ${projectName}-all.jar"
-  }
-}
 
 task copyToOutput(type: Copy) {
   dependsOn shadowJar
-  dependsOn writeExecuteScript
+  dependsOn jar
   destinationDir = outputDirectory
   from (file(shadowJar.archivePath)) {
-  }
-  from (file("${buildDir}/run${projectName}.sh")) {
   }
   from (file("lib/libopencv_java340.so")) {
   }
   from (file("scripts/ipFinder.sh")) {
+  }
+    from (file("scripts/runVision2018.sh")) {
   }
 
 }
@@ -88,6 +81,8 @@ task zipOutput(type: Zip) {
   from (file("lib/libopencv_java340.so")) {
   }
     from (file("scripts/ipFinder.sh")) {
+  }
+      from (file("scripts/runVision2018.sh")) {
   }
 }
 

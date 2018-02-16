@@ -87,6 +87,13 @@ public class Main {
 		if(camera.isOpened()) {
 			System.out.println("Camera is opened");
 		}
+		else {
+			return;
+		}
+		if(rioClient == null) {
+			System.out.println("Not connected");
+			return;
+		}
 		
 		//make a mat that will be reused
 		Mat capture = new Mat();
