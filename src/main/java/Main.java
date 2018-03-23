@@ -35,7 +35,7 @@ public class Main {
 		rioClient = new RioClient("roboRIO-6479-FRC.local", 1182);
 		
 		
-		try {
+		/*try {
             System.out.println("Finding Driver Station IP");
             //run command 
             Process p = Runtime.getRuntime().exec("sh ipFinder.sh");
@@ -72,7 +72,7 @@ public class Main {
 		}
         catch (InterruptedException e) {
             System.out.println("Error running process: " + e.getMessage());
-        }
+        }*/
 	}
 	
 	//the socket connection to the rio
@@ -110,10 +110,10 @@ public class Main {
 			boolean success = camera.read(capture);
 			
 			if(success) {
-				if(dsClient != null)
+				/*if(dsClient != null)
 				{
 					dsClient.sendImage(capture);
-				}
+				}*/
 				
 				Mode cameraMode = rioClient.getMode();
 				System.out.println("MODE: " + cameraMode);

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -24,7 +26,9 @@ public class RioClient {
 		
 		thread = new Thread(() -> {
 			try {
-				socket = new Socket(host, port);
+				SocketAddress addr = new InetSocketAddress(host, port);
+				socket = new Socket();
+				socket.connect(addr, 5);
 				
 				InputStream in = socket.getInputStream();
 				OutputStream out = socket.getOutputStream();
@@ -39,6 +43,10 @@ public class RioClient {
 					//read in from the current buffer
 					dataRecieved = ModePacket.parseDelimitedFrom(in);
 				}
+			}
+			catch (SocketTimeoutException e) {
+				System.err.println("Could not connect to robo rio");
+				System.exit(1);
 			}
 			catch (UnknownHostException e) {
 				e.printStackTrace();
