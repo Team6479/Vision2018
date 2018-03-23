@@ -94,7 +94,7 @@ build {
 
 remotes {
   jetson {
-    host = '10.64.79.74'
+    host = '10.64.79.10'
     user = 'nvidia'
     password = 'nvidia'
   }
