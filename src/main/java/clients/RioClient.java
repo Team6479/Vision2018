@@ -28,7 +28,7 @@ public class RioClient {
 			try {
 				SocketAddress addr = new InetSocketAddress(host, port);
 				socket = new Socket();
-				socket.connect(addr, 5);
+				socket.connect(addr, 5000);
 				
 				InputStream in = socket.getInputStream();
 				OutputStream out = socket.getOutputStream();
