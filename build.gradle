@@ -137,7 +137,11 @@ task remoteClean {
       	def result = execute execCMD
       }
     }
-  } 
+  }
+
+  ssh.settings {
+      knownHosts = allowAnyHosts
+  }
          
  }
 
