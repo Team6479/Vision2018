@@ -1,7 +1,4 @@
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.List;
 
 import org.opencv.core.Mat;
@@ -80,6 +77,8 @@ public class Main {
 	//socket connection to ds
 	public static DSClient dsClient;
 	
+	private static final double NO_CUBE_FOUND_CODE = 9999;
+	
 	public static void main(String[] args) throws InterruptedException {
 		
 		//open camera
@@ -131,6 +130,7 @@ public class Main {
 					
 					//skip to the end of the loop, nothing more to be done here
 					if(cubeOutline == null) {
+						rioClient.setDistance(NO_CUBE_FOUND_CODE);
 						continue;
 					}
 					
@@ -169,6 +169,7 @@ public class Main {
 					
 					//skip to the end of the loop, nothing more to be done here
 					if(goalOutline == null) {
+						rioClient.setDistance(NO_CUBE_FOUND_CODE);
 						continue;
 					}
 					
