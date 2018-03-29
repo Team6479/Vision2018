@@ -35,6 +35,7 @@ public class DSClient {
 						MatOfByte buf = new MatOfByte();
 						MatOfInt quality = new MatOfInt(Imgcodecs.CV_IMWRITE_JPEG_QUALITY,50);
 						//MatOfInt quality = new MatOfInt(Imgcodecs.CV_IMWRITE_PNG_COMPRESSION,50);
+						@SuppressWarnings("unused")
 						boolean res = Imgcodecs.imencode(".jpg", image, buf, quality);
 						out.write(buf.toArray());
 						out.flush();
